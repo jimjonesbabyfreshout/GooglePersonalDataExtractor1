@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Google Personal Data Extractor</title>
+    <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" />
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <style>
+      body {
+        background-color: #222;
+        color: #fff;
+        font-family: sans-serif;
+      }
+
+      h1 {
+        margin-top: 0;
+      }
+
+      form {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #file-input {
+        margin-right: 10px;
+      }
+
+      #text-viewer {
+        width: 100%;
+        height: 500px;
+        background-color: #333;
+        color: #fff;
+        padding: 10px;
+        overflow: auto;
+      }
+
+      #buttons {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      #copy-button,
+      #save-button {
+        padding: 10px 20px;
+        background-color: #444;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Google Personal Data Extractor</h1>
+
+    <p>This tool will extract all of your Google personal data from a HTML file. Simply select the file you want to decode, and then click the "Decode" button. The extracted data will be displayed in the text viewer below.</p>
+
+    <form id="form">
+      <input type="file" id="file-input" accept=".html" />
+      <button type="submit" id="decode-button" class="mdc-button mdc-button--raised mdc-button--touch" onclick="decode()">
+        <span class="mdc-button__ripple"></span>
+        <span class="mdc-button__touch"></span>
+        <span class="mdc-button__label" id="decode-button-label">Decode</span>
+        <span class="mdc-button__label visually-hidden" id="decode-button-loading">Loading...</span>
+      </button>
+    </form>
+
+    <div id="text-viewer"></div>
+
+    <div id="buttons">
+      <button id="copy-button" class="mdc-button mdc-button--raised mdc-button--touch" onclick="copy()">
+        <span class="mdc-button__ripple"></span>
+        <span class="mdc-button__touch"></span>
+        <span class="mdc-button__label">Copy to clipboard</span>
+      </button>
+      <button id="save-button" class="mdc-button mdc-button--raised mdc-button--touch" onclick="save()">
+        <span class="mdc-button__ripple"></span>
+        <span class="mdc-button__touch"></span>
+        <span class="mdc-button__label">Save to device</span>
+      </button>
+    </div>
+
+    <script>
+      (function () {
+        const form = document.getElementById("form");
+        const fileInput = document.getElementById("file-input");
+        const textView = document.getElementById("text-viewer");
+        const buttons = document.getElementById("buttons");
+        const copyButton = document.getElementById("copy-button");
+        const saveButton = document.getElementById("save-button");
+
+        const decodeButton = document.getElementById("decode-button");
+        const decodeButtonLabel = document.getElementById("decode-button-label");
+        const decodeButtonLoading = document.getElementById("decode-button-loading");
+
+        const buttons = document.querySelectorAll(".mdc-button");
+        buttons.forEach((btn) => mdc.ripple.MDCRipple.attachTo(btn));
+
+        const extractData = (text) => {
+          // Extract the data from the HTML file.
+
+          return data;
+        };
+
+        const decode = () => {
+          decodeButton.setAttribute("disabled", true);
+          decodeButtonLabel.classList.add("visually-hidden");
+          decodeButtonLoading.classList.remove("visually-hidden");
+
+          const file = fileInput.files[0];
+
+          const reader = new FileReader();
+
+          reader.onload = () => {
+            const text = reader.result;
+
+            const data = extractData(text);
+
+            textView.textContent = data;
+
+            decodeButton.removeAttribute("disabled");
+            decodeButtonLabel.classList.remove("visually-hidden");
+            decodeButtonLoading.classList.add("visually-hidden");
+          };
+
+          reader.readAsText(file);
+        };
+
+        const copy = () => {
+          const text = textView.textContent;
+
+          navigator.clipboard.writeText(text);
+        };
+
+        const save = () => {
+          const text = textView.textContent;
+
+          const blob = new Blob([text], { type: "text/plain" });
+
+          const url = URL.createObjectURL(blob);
+
+          const a = document.createElement("a");
+
+          a.href = url;
+          a.download = "google-personal-data.txt";
+
+          a.click();
+
+          URL.revokeObjectURL(url);
+        };
+
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+
+          decode();
+        });
+
+        copyButton.addEventListener("click", copy);
+
+        saveButton.addEventListener("click", save);
+      })();
+    </script>
+  </body>
+</html>

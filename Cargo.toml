@@ -1,0 +1,8 @@
+[package]
+name = "google-personal-data-extractor"
+version = "0.1.0"
+authors = ["Your Name"]
+edition = "2021"
+
+[dependencies]
+yew = "0.19"
