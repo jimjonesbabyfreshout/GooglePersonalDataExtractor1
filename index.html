@@ -50,7 +50,92 @@
         border: none;
         cursor: pointer;
       }
+
+      .visually-hidden {
+        display: none;
+      }
     </style>
+    <script>
+  (function () {
+    const fileInput = document.getElementById("file-input");
+    const textView = document.getElementById("text-viewer");
+    const buttons = document.getElementById("buttons");
+    const copyButton = document.getElementById("copy-button");
+    const saveButton = document.getElementById("save-button");
+
+    const decodeButton = document.getElementById("decode-button");
+    const decodeButtonLabel = document.getElementById("decode-button-label");
+    const decodeButtonLoading = document.getElementById("decode-button-loading");
+
+    const buttons = document.querySelectorAll(".mdc-button");
+    buttons.forEach((btn) => mdc.ripple.MDCRipple.attachTo(btn));
+
+    const extractData = (text) => {
+      // Extract the data from the HTML file.
+
+      return data;
+    };
+
+    const decode = () => {
+      decodeButton.setAttribute("disabled", true);
+      decodeButtonLabel.classList.add("visually-hidden");
+      decodeButtonLoading.classList.remove("visually-hidden");
+
+      const file = fileInput.files[0];
+
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const text = reader.result;
+
+        const data = extractData(text);
+
+        textView.textContent = data;
+
+        decodeButton.removeAttribute("disabled");
+        decodeButtonLabel.classList.remove("visually-hidden");
+        decodeButtonLoading.classList.add("visually-hidden");
+
+        fileInput.value = "";
+      };
+
+      reader.readAsText(file);
+    };
+
+    const copy = () => {
+      const text = textView.textContent;
+
+      navigator.clipboard.writeText(text);
+    };
+
+    const save = () => {
+      const text = textView.textContent;
+
+      const blob = new Blob([text], { type: "text/plain" });
+
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+
+      a.href = url;
+      a.download = "google-personal-data.txt";
+
+      a.click();
+
+      URL.revokeObjectURL(url);
+    };
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      decode();
+    });
+
+    copyButton.addEventListener("click", copy);
+
+    saveButton.addEventListener("click", save);
+  })();
+</script>
   </head>
 
   <body>
@@ -85,7 +170,6 @@
 
     <script>
       (function () {
-        const form = document.getElementById("form");
         const fileInput = document.getElementById("file-input");
         const textView = document.getElementById("text-viewer");
         const buttons = document.getElementById("buttons");
@@ -124,6 +208,8 @@
             decodeButton.removeAttribute("disabled");
             decodeButtonLabel.classList.remove("visually-hidden");
             decodeButtonLoading.classList.add("visually-hidden");
+
+            fileInput.value = "";
           };
 
           reader.readAsText(file);
