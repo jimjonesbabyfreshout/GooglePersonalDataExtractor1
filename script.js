@@ -1,53 +1,56 @@
-const form = document.getElementById("form");
-const fileInput = document.getElementById("file-input");
-const textView = document.getElementById("text-viewer");
-const buttons = document.getElementById("buttons");
-const copyButton = document.getElementById("copy-button");
-const saveButton = document.getElementById("save-button");
+const extractData = (file, text) => {
+  // Get the file type.
 
-form.addEventListener("submit", (e) => {
-  e.preventDefault();
+  const fileType = file.type;
 
-  const file = fileInput.files[0];
+  // Get the file UTI.
 
-  const reader = new FileReader();
+  const fileUTI = file.webkitPersistentStorageKey || file.persistentStorageKey;
 
-  reader.onload = () => {
-    const text = reader.result;
+  // Decode the data based on the file type and UTI.
 
-    const data = extractData(text);
+  let data;
 
-    textView.textContent = data;
-  };
+  switch (fileType) {
+    case "text/html":
+      data = extractDataFromHTML(text);
+      break;
+    case "text/json":
+      data = extractDataFromJSON(text);
+      break;
+    case "text/csv":
+      data = extractDataFromCSV(text);
+      break;
+    case "application/vnd.google-apps.drive-sdk":
+      data = extractDataFromGoogleDrive(fileUTI);
+      break;
+    default:
+      data = "Unknown file type";
+  }
 
-  reader.readAsText(file);
-});
+  return data;
+};
 
-copyButton.addEventListener("click", () => {
-  const text = textView.textContent;
-
-  navigator.clipboard.writeText(text);
-});
-
-saveButton.addEventListener("click", () => {
-  const text = textView.textContent;
-
-  const blob = new Blob([text], { type: "text/plain" });
-
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-
-  a.href = url;
-  a.download = "google-personal-data.txt";
-
-  a.click();
-
-  URL.revokeObjectURL(url);
-});
-
-function extractData(text) {
+const extractDataFromHTML = (text) => {
   // Extract the data from the HTML file.
 
   return data;
-}
+};
+
+const extractDataFromJSON = (text) => {
+  // Extract the data from the JSON file.
+
+  return data;
+};
+
+const extractDataFromCSV = (text) => {
+  // Extract the data from the CSV file.
+
+  return data;
+};
+
+const extractDataFromGoogleDrive = (fileUTI) => {
+  // Extract the data from the Google Drive file.
+
+  return data;
+};

@@ -55,96 +55,15 @@
         display: none;
       }
     </style>
-    <script>
-  (function () {
-    const fileInput = document.getElementById("file-input");
-    const textView = document.getElementById("text-viewer");
-    const buttons = document.getElementById("buttons");
-    const copyButton = document.getElementById("copy-button");
-    const saveButton = document.getElementById("save-button");
-
-    const decodeButton = document.getElementById("decode-button");
-    const decodeButtonLabel = document.getElementById("decode-button-label");
-    const decodeButtonLoading = document.getElementById("decode-button-loading");
-
-    const buttons = document.querySelectorAll(".mdc-button");
-    buttons.forEach((btn) => mdc.ripple.MDCRipple.attachTo(btn));
-
-    const extractData = (text) => {
-      // Extract the data from the HTML file.
-
-      return data;
-    };
-
-    const decode = () => {
-      decodeButton.setAttribute("disabled", true);
-      decodeButtonLabel.classList.add("visually-hidden");
-      decodeButtonLoading.classList.remove("visually-hidden");
-
-      const file = fileInput.files[0];
-
-      const reader = new FileReader();
-
-      reader.onload = () => {
-        const text = reader.result;
-
-        const data = extractData(text);
-
-        textView.textContent = data;
-
-        decodeButton.removeAttribute("disabled");
-        decodeButtonLabel.classList.remove("visually-hidden");
-        decodeButtonLoading.classList.add("visually-hidden");
-
-        fileInput.value = "";
-      };
-
-      reader.readAsText(file);
-    };
-
-    const copy = () => {
-      const text = textView.textContent;
-
-      navigator.clipboard.writeText(text);
-    };
-
-    const save = () => {
-      const text = textView.textContent;
-
-      const blob = new Blob([text], { type: "text/plain" });
-
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-
-      a.href = url;
-      a.download = "google-personal-data.txt";
-
-      a.click();
-
-      URL.revokeObjectURL(url);
-    };
-
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-
-      decode();
-    });
-
-    copyButton.addEventListener("click", copy);
-
-    saveButton.addEventListener("click", save);
-  })();
-</script>
   </head>
 
   <body>
     <h1>Google Personal Data Extractor</h1>
 
-    <p>This tool will extract all of your Google personal data from a HTML file. Simply select the file you want to decode, and then click the "Decode" button. The extracted data will be displayed in the text viewer below.</p>
+    <p>This tool will extract all of your Google personal data from any file type. Simply select the file you want to decode, and then click the "Decode" button. The extracted data will be displayed in the text viewer below.</p>
 
     <form id="form">
-      <input type="file" id="file-input" accept=".html" />
+      <input type="file" id="file-input" />
       <button type="submit" id="decode-button" class="mdc-button mdc-button--raised mdc-button--touch" onclick="decode()">
         <span class="mdc-button__ripple"></span>
         <span class="mdc-button__touch"></span>
@@ -183,8 +102,8 @@
         const buttons = document.querySelectorAll(".mdc-button");
         buttons.forEach((btn) => mdc.ripple.MDCRipple.attachTo(btn));
 
-        const extractData = (text) => {
-          // Extract the data from the HTML file.
+        const extractData = (file) => {
+          // Extract the data from the file.
 
           return data;
         };
@@ -201,15 +120,13 @@
           reader.onload = () => {
             const text = reader.result;
 
-            const data = extractData(text);
+            const data = extractData(file, text);
 
             textView.textContent = data;
 
             decodeButton.removeAttribute("disabled");
             decodeButtonLabel.classList.remove("visually-hidden");
             decodeButtonLoading.classList.add("visually-hidden");
-
-            fileInput.value = "";
           };
 
           reader.readAsText(file);
