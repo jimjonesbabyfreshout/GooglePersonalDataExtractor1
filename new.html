@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Base64 Decoder</title>
+<script>
+// The Base64-encoded string
+const encodedString = "UóéßÏ]vsâànÄ";
+
+// Function to decode Base64 string
+function decodeBase64(input) {
+  // Assuming the input is encoded in UTF-8
+  const decodedBytes = new TextEncoder().encode(input);
+  return String.fromCharCode(...decodedBytes);
+}
+
+// Function to handle button click
+function handleDecodeClick() {
+  try {
+    // Decode the Base64 string
+    const decodedString = decodeBase64(encodedString);
+
+    // Display the decoded string in an alert box
+    alert(decodedString);
+
+    // Optionally, you can also copy the decoded string to the clipboard
+    navigator.clipboard.writeText(decodedString).then(function() {
+      console.log('Text copied to clipboard');
+    }, function(err) {
+      console.error('Error copying text: ', err);
+    });
+  } catch (error) {
+    console.error('Error decoding Base64 string:', error);
+  }
+}
+</script>
+</head>
+<body>
+  <button onclick="handleDecodeClick()">Decode and Copy to Clipboard</button>
+</body>
+</html>

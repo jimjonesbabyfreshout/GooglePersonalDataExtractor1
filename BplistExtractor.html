@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Webarchive Decoder</title>
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+  const form = document.getElementById('form');
+  const result = document.getElementById('result');
+  const textViewer = document.getElementById('text-viewer');
+
+  // Use a CDN for bplist-parser
+  const bplistParserCDN = 'https://cdn.jsdelivr.net/npm/bplist-parser@latest/dist/bplistParser.js';
+
+  // Dynamically import the bplist-parser library from the CDN
+  import(bplistParserCDN)
+    .then(bplistParserModule => {
+      const bplistParser = bplistParserModule.default; // Access the default export
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const fileInput = document.getElementById('webarchive-file');
+        const file = fileInput.files[0];
+        if (!file) {
+          alert('Please select an iOS webarchive file.');
+          return;
+        }
+
+        try {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const fileData = new Uint8Array(e.target.result);
+            const decodedData = bplistParser.parseBuffer(fileData.buffer);
+            const htmlContent = decodedData.root.archivedDocument.content;
+
+            // Assuming htmlContent is a string containing HTML content
+            // You would need to convert this HTML to plain text using a library or method
+            // For example, using the html-to-text library:
+            // const plainText = htmlToText.fromString(htmlContent, {
+            //   wordwrap: false,
+            //   ignoreImage: true
+            // });
+            // textViewer.textContent = plainText;
+
+            // For demonstration purposes, let's just display the HTML content
+            result.textContent = htmlContent;
+          };
+          reader.readAsArrayBuffer(file);
+        } catch (error) {
+          console.error('An error occurred:', error);
+          alert('An error occurred while decoding the iOS webarchive file.');
+        }
+      });
+    })
+    .catch(error => {
+      console.error('Failed to load bplist-parser library:', error);
+    });
+});
+</script>
+</head>
+<body>
+  <form id="form">
+    <input type="file" id="webarchive-file" accept=".webarchive">
+    <button type="submit">Decode</button>
+  </form>
+  <div id="result"></div>
+  <div id="text-viewer"></div>
+</body>
+</html>

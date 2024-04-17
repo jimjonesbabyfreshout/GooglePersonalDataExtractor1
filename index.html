@@ -1,170 +1,151 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>Google Personal Data Extractor</title>
-    <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" />
-    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
-    <style>
-      body {
-        background-color: #222;
-        color: #fff;
-        font-family: sans-serif;
-      }
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>iOS Webarchive Decoder</title>
+<link rel="stylesheet" href="style.css">
+<script type="module">
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("form");
+    const textViewer = document.getElementById("text-viewer");
+    const copyButton = document.getElementById("copy-button");
+    const downloadButton = document.getElementById("download-button");
+    const listTagsButton = document.getElementById("list-tags-button");
 
-      h1 {
-        margin-top: 0;
-      }
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const file = document.getElementById("webarchive-file").files[0];
+        if (file) {
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const decoder = new TextDecoder("utf-8");
+                const htmlContent = decoder.decode(arrayBuffer);
+                const decodedHtml = decodeHtml(htmlContent);
+                const tagsAndClasses = getAllTagsAndClasses(decodedHtml);
+                displayResult(tagsAndClasses);
+            } catch (error) {
+                console.error("An error occurred while decoding the iOS webarchive file:", error);
+                alert("An error occurred while decoding the iOS webarchive file.");
+            }
+        } else {
+            alert("Please select an iOS webarchive file.");
+        }
+    });
 
-      form {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+    listTagsButton.addEventListener("click", () => {
+        const file = document.getElementById("webarchive-file").files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const htmlContent = event.target.result;
+                const tags = getAllTags(htmlContent);
+                displayResult(tags);
+            };
+            reader.readAsText(file);
+        } else {
+            alert("Please select an iOS webarchive file.");
+        }
+    });
 
-      #file-input {
-        margin-right: 10px;
-      }
+    copyButton.addEventListener("click", () => {
+        const content = textViewer.textContent;
+        copyToClipboard(content);
+    });
 
-      #text-viewer {
-        width: 100%;
-        height: 500px;
-        background-color: #333;
-        color: #fff;
-        padding: 10px;
-        overflow: auto;
-      }
+    downloadButton.addEventListener("click", () => {
+        const content = textViewer.textContent;
+        downloadFile(content);
+    });
 
-      #buttons {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-      }
+    function decodeHtml(html) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        return doc.documentElement.outerHTML;
+    }
 
-      #copy-button,
-      #save-button {
-        padding: 10px 20px;
-        background-color: #444;
-        color: #fff;
-        border: none;
-        cursor: pointer;
-      }
+    function getAllTagsAndClasses(html) {
+        const tagsAndClasses = {};
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
 
-      .visually-hidden {
-        display: none;
-      }
-    </style>
-  </head>
+        function traverse(node) {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                const tag = node.tagName.toLowerCase();
+                const classes = Array.from(node.classList);
+                if (tag in tagsAndClasses) {
+                    tagsAndClasses[tag].push(...classes);
+                } else {
+                    tagsAndClasses[tag] = classes;
+                }
+                for (const childNode of node.childNodes) {
+                    traverse(childNode);
+                }
+            }
+        }
+        
+        traverse(doc.body);
+        return tagsAndClasses;
+    }
 
-  <body>
-    <h1>Google Personal Data Extractor</h1>
+    function getAllTags(html) {
+        const tags = {};
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
 
-    <p>This tool will extract all of your Google personal data from any file type. Simply select the file you want to decode, and then click the "Decode" button. The extracted data will be displayed in the text viewer below.</p>
+        function traverse(node) {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                const tag = node.tagName.toLowerCase();
+                if (tag in tags) {
+                    tags[tag]++;
+                } else {
+                    tags[tag] = 1;
+                }
+                for (const childNode of node.childNodes) {
+                    traverse(childNode);
+                }
+            }
+        }
 
-    <form id="form">
-      <input type="file" id="file-input" />
-      <button type="submit" id="decode-button" class="mdc-button mdc-button--raised mdc-button--touch" onclick="decode()">
-        <span class="mdc-button__ripple"></span>
-        <span class="mdc-button__touch"></span>
-        <span class="mdc-button__label" id="decode-button-label">Decode</span>
-        <span class="mdc-button__label visually-hidden" id="decode-button-loading">Loading...</span>
-      </button>
-    </form>
+        traverse(doc.documentElement);
+        return tags;
+    }
 
-    <div id="text-viewer"></div>
+    function displayResult(data) {
+        textViewer.textContent = JSON.stringify(data, null, 2);
+    }
 
-    <div id="buttons">
-      <button id="copy-button" class="mdc-button mdc-button--raised mdc-button--touch" onclick="copy()">
-        <span class="mdc-button__ripple"></span>
-        <span class="mdc-button__touch"></span>
-        <span class="mdc-button__label">Copy to clipboard</span>
-      </button>
-      <button id="save-button" class="mdc-button mdc-button--raised mdc-button--touch" onclick="save()">
-        <span class="mdc-button__ripple"></span>
-        <span class="mdc-button__touch"></span>
-        <span class="mdc-button__label">Save to device</span>
-      </button>
-    </div>
+    function copyToClipboard(content) {
+        navigator.clipboard.writeText(content)
+            .then(() => alert("Text copied to clipboard"))
+            .catch((error) => console.error("Error copying text:", error));
+    }
 
-    <script>
-      (function () {
-        const fileInput = document.getElementById("file-input");
-        const textView = document.getElementById("text-viewer");
-        const buttons = document.getElementById("buttons");
-        const copyButton = document.getElementById("copy-button");
-        const saveButton = document.getElementById("save-button");
-
-        const decodeButton = document.getElementById("decode-button");
-        const decodeButtonLabel = document.getElementById("decode-button-label");
-        const decodeButtonLoading = document.getElementById("decode-button-loading");
-
-        const buttons = document.querySelectorAll(".mdc-button");
-        buttons.forEach((btn) => mdc.ripple.MDCRipple.attachTo(btn));
-
-        const extractData = (file) => {
-          // Extract the data from the file.
-
-          return data;
-        };
-
-        const decode = () => {
-          decodeButton.setAttribute("disabled", true);
-          decodeButtonLabel.classList.add("visually-hidden");
-          decodeButtonLoading.classList.remove("visually-hidden");
-
-          const file = fileInput.files[0];
-
-          const reader = new FileReader();
-
-          reader.onload = () => {
-            const text = reader.result;
-
-            const data = extractData(file, text);
-
-            textView.textContent = data;
-
-            decodeButton.removeAttribute("disabled");
-            decodeButtonLabel.classList.remove("visually-hidden");
-            decodeButtonLoading.classList.add("visually-hidden");
-          };
-
-          reader.readAsText(file);
-        };
-
-        const copy = () => {
-          const text = textView.textContent;
-
-          navigator.clipboard.writeText(text);
-        };
-
-        const save = () => {
-          const text = textView.textContent;
-
-          const blob = new Blob([text], { type: "text/plain" });
-
-          const url = URL.createObjectURL(blob);
-
-          const a = document.createElement("a");
-
-          a.href = url;
-          a.download = "google-personal-data.txt";
-
-          a.click();
-
-          URL.revokeObjectURL(url);
-        };
-
-        form.addEventListener("submit", (e) => {
-          e.preventDefault();
-
-          decode();
-        });
-
-        copyButton.addEventListener("click", copy);
-
-        saveButton.addEventListener("click", save);
-      })();
-    </script>
-  </body>
+    function downloadFile(content) {
+        const blob = new Blob([content], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = "decoded_text.txt";
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        URL.revokeObjectURL(url);
+    }
+});
+</script>
+</head>
+<body>
+<form id="form">
+<label for="webarchive-file">iOS Webarchive File:</label>
+<input type="file" id="webarchive-file" accept=".webarchive">
+<button type="submit" class="button">Decode</button>
+</form>
+<div id="result">
+<div id="text-viewer"></div>
+<button id="copy-button">Copy to Clipboard</button>
+<button id="download-button">Download Decoded File</button>
+<button id="list-tags-button">List HTML Tags</button>
+</div>
+</body>
 </html>
